@@ -710,8 +710,8 @@ parser = argparse.ArgumentParser(prog="itBins",
                                              "║                                                                              ║\n"
                                              "║ (You will need the files produced by script XXX)                             ║\n"
                                              "║                                                                              ║\n"
-                                             "║     python itBins_0.6.0.py --example-task-file                               ║\n"
-                                             "║     python itBins_0.6.0.py -ost -b overview.txt -g SCG.csv > itBins.log      ║\n"
+                                             "║     python itBins.py --example-task-file                                     ║\n"
+                                             "║     python itBins.py -ost -b overview.txt -g SCG.csv > itBins.log            ║\n"
                                              "║                                                                              ║\n"
                                              "║ The tasks.json file is itBins' config. You can modify it to tweak curation.  ║\n"
                                              "╚══════════════════════════════════════════════════════════════════════════════╝\n"
@@ -830,7 +830,7 @@ parser.add_argument("-h", "--help",
                     help="\nshow this help message and exit.\n\n")
 parser.add_argument("--version",
                     action="version",
-                    version="%(prog)s 0.6.0",
+                    version="%(prog)s 0.6.1",
                     help="\ndisplay version info\n\n")
 parser.add_argument("--manual",
                     action="version",
@@ -923,7 +923,7 @@ parser.add_argument("--manual",
                              "completeness cutoff is set as the first task, this represents only a small\n"
                              "increase in total time, as most remainders will be excluded based on low\n"
                              "completeness. \"reframe\" may be set to False, to prevent removing the\n"
-                             "remainder scaffolds from the current frame, following tasks will still work on\n"
+                    "remainder scaffolds from the current frame, following tasks will still work on\n" 
                              "the full bin, but any scaffold assigned to the remainder will be worked on\n"
                              "again later, if \"recheck\" is set to True.\n\n"
 
@@ -993,7 +993,7 @@ task_dict = {"flags": {"d": "Bin",
                        "task_09": {"todo": "pick_peak",
                                    "type_of_peaklist": "Cov"},
                        "task_10": {"todo": "expand_to_baseline",
-                                   "type_of_peaklist": "GC"},
+                                   "type_of_peaklist": "Cov"},
                        "task_11": {"todo": "limit_peak",
                                    "fixed_radius": 10,
                                    "linear_position_radius": 0.05,
