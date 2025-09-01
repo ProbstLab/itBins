@@ -1020,7 +1020,7 @@ task_dict = {"flags": {"d": "Bin",
 if cl_args.task_example_path is not None:
     with open(cl_args.task_example_path, "w") as filepath:
         try:
-            json.dump(task_dict, filepath, indent=12)
+            json.dump(task_dict, filepath, indent='\t') #indent=12
         except Exception:
             print("\n\nWas unable to write task file, will exit", file=sys.stderr)
             traceback.print_exc()
@@ -1793,6 +1793,8 @@ for binIndex, listedBin in enumerate(binList) :
             curr_frame.loc[:, "Cov_Filter"] = pd.Series(data = curr_array["filters"][1], dtype = "int", index = curr_frame.index)
             curr_frame.loc[:, "Tax_Filter"] = pd.Series(data = curr_array["filters"][2], dtype = "int", index = curr_frame.index)
             #task_71_timer += time.time() - t_71
+            print("\nCurrarray:\n", curr_array["filters"][0])
+            print("\nCurrframe:\n", curr_frame.loc[:, "GC_Filter"])
 
             
 ################################################################################
@@ -1873,6 +1875,7 @@ for binIndex, listedBin in enumerate(binList) :
             ### Perform completeness cutoff task
             try :
                 curr_array, removed, relevant_contamination, contamination_type = PROT_contamination_cutoff(curr_array, cutoff)
+                print("\n@@@@@\n", relevant_contamination, removed)
             except Exception :
                 print("Cont_cutoff: Was unable to perform contamination cutoff. Will continue with next task.", file = sys.stderr)
                 traceback.print_exc()
@@ -1986,6 +1989,7 @@ else :
     lprint("\nResult discarded")
 
 if cl_args.summary_path != None :
+    print(bin_summary_list_list)
     print(np.array(bin_summary_list_list).shape)
     summary_frame = pd.DataFrame(data = bin_summary_list_list)
     summary_frame = summary_frame.iloc[:, 0:18]
