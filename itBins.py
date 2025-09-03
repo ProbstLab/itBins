@@ -138,7 +138,10 @@ ARCHAEAL_REFERENCE_GENES = ["A_CCA-adding_enzyme",
 
 ARCHAEAL_REFERENCE_GENE_NUMBER = 38
 
-
+SEMVER_MAJOR = 0
+SEMVER_MINOR = 8
+SEMVER_PATCH = 0
+VERSION_STRING = str(SEMVER_MAJOR) + '.' + str(SEMVER_MINOR) + '.' + str(SEMVER_PATCH)
 #dt_timer = 0
 #dt_count = 0
 #dt_np_timer = 0
@@ -437,6 +440,8 @@ def PROT_create_peaklist(dict_of_arrays, type_of_peaklist):
                  "peaks": h_list_of_peaks,
                  "included": h_list_of_inclusions}
     p_list_of_positions = h_list_of_values[h_list_of_peaks == 1]
+    
+    #print(histogram)
 
     bacterial_score = FAST_dt_score(af_bac)
     archaeal_score = FAST_dt_score(af_arc)
@@ -493,18 +498,23 @@ def PROT_pick_peak(array_peaklist, histogram, type_of_peaklist):
     returns array peaklist and histogram
     """
     index_largest_peak = np.where(array_peaklist["area"] == np.max(array_peaklist["area"]))[0]
+    #print(array_peaklist["area"])
+    #print(index_largest_peak)
+    #print(array_peaklist["start"])
+    #print(array_peaklist["end"])
+
     if np.shape(index_largest_peak)[0] == 1:
         # left_edge = array_peaklist["start"][index_largest_peak]
         # right_edge = array_peaklist["end"][index_largest_peak]
         array_peaklist["included"][index_largest_peak] = 1
         if type_of_peaklist == "GC":
             histogram["included"][(histogram["GC"] >= array_peaklist["start"][index_largest_peak]) & (histogram["GC"] <= array_peaklist["end"][index_largest_peak])] = 1
-        elif type_of_peaklist == "GC":
+        elif type_of_peaklist == "Cov":
             histogram["included"][(histogram["Cov"] >= array_peaklist["start"][index_largest_peak]) & (histogram["Cov"] <= array_peaklist["end"][index_largest_peak])] = 1
+        #print("@@@@@", histogram["included"])
         return array_peaklist, histogram
     else:
         print("Well shit, i cannot deal with multiple peaks with the same area yet. (PROT_GC_pick)")
-
 
 ###############################################################################
 # FAST PEAK EXPANDER (PROTOTYPE)
@@ -514,6 +524,8 @@ def PROT_expand_to_baseline(array_peaklist, histogram, type_of_peaklist):
     """
     returns expanded peaklist and histogram
     """
+    #print(histogram["included"])
+    #print(np.where(histogram["included"] == 1))
     leftest_inclusion = np.min(np.where(histogram["included"] == 1)[0])
     closest_left_baseline = np.max(np.where((histogram["peaks"] == -2) & (histogram[type_of_peaklist] <= [histogram[type_of_peaklist][leftest_inclusion]]))[0])
     if leftest_inclusion != closest_left_baseline:
@@ -701,9 +713,11 @@ parser = argparse.ArgumentParser(prog="itBins",
                                              "╔═█\033[7mGETTING STARTED\033[0m█════════════════════════════════════════════════════════════╗\n"
                                              "║ Installing:                                                                  ║\n"
                                              "║                                                                              ║\n"
-                                             "║     conda create -n \"itBinsEnv\" python=3.10.11 pandas=1.4.2 numpy=1.21.5     ║\n"
+                                             "║     mamba create -n \"itBinsEnv\" python=3.10.11 pandas=1.4.2 numpy=1.21.5     ║\n"
                                              "║                                                                              ║\n"
-                                             "║ mamba or micromamba may be better suited to resolve the environment          ║\n"
+                                             "║ mamba or micromamba may be better suited to resolve the environment than     ║\n"
+                                             "║ conda, which can mess up the exact versions of dependencies. The use of      ║\n"
+                                             "║ conda is discouraged                                                         ║\n"
                                              "║                                                                              ║\n"
                                              "║                                                                              ║\n"
                                              "║ You just want to curate some bins:                                           ║\n"
@@ -779,6 +793,13 @@ parser.add_argument("-o", "--output",
                          "--no-output.\n\n",
                     metavar="OUTPUT_FILE",
                     type=str)
+parser.add_argument("--estimate",
+                    dest="estimate_path",
+                    nargs="?",
+                    const="./binning_success_estimation.tsv",
+                    help="Provide a path to save the binning success esitimation to.\n\n",
+                    metavar="ESTIMATE_PATH",
+                    type=str)
 parser.add_argument("-s", "--summary",
                     dest="summary_path",
                     nargs="?",
@@ -830,7 +851,7 @@ parser.add_argument("-h", "--help",
                     help="\nshow this help message and exit.\n\n")
 parser.add_argument("--version",
                     action="version",
-                    version="%(prog)s 0.6.1",
+                    version=("%(prog)s " + VERSION_STRING),
                     help="\ndisplay version info\n\n")
 parser.add_argument("--manual",
                     action="version",
@@ -923,7 +944,7 @@ parser.add_argument("--manual",
                              "completeness cutoff is set as the first task, this represents only a small\n"
                              "increase in total time, as most remainders will be excluded based on low\n"
                              "completeness. \"reframe\" may be set to False, to prevent removing the\n"
-                    "remainder scaffolds from the current frame, following tasks will still work on\n" 
+                             "remainder scaffolds from the current frame, following tasks will still work on\n" 
                              "the full bin, but any scaffold assigned to the remainder will be worked on\n"
                              "again later, if \"recheck\" is set to True.\n\n"
 
@@ -959,7 +980,8 @@ try:
 except Exception:
     traceback.print_exc()
 
-task_dict = {"flags": {"d": "Bin",
+task_dict = {"version": VERSION_STRING,
+             "flags": {"d": "Bin",
                        "u": "curated"},
              "parameters": {"min_runs": 0,
                             "max_runs": 0},
@@ -1003,17 +1025,17 @@ task_dict = {"flags": {"d": "Bin",
                                    "drop_level": 1,
                                    "max_length": 0.00000001,
                                    "drop_if_pos": True},
-                       "task_13": {"todo": "FAST_exit"},
-                       "task_14": {"todo": "append_remainder",
+                       "task_13": {"todo": "append_remainder",
                                    "suffix": "_remainder",
                                    "reframe": True,
                                    "recheck": True},
-                       "task_15": {"todo": "cont_cutoff",
+                       "task_14": {"todo": "cont_cutoff",
                                    "cutoff": 0.1,
                                    "break": True},
-                       "task_16": {"todo": "comp_cutoff",
+                       "task_15": {"todo": "comp_cutoff",
                                    "cutoff": 0.7,
                                    "break": True},
+                       "task_16": {"todo": "FAST_exit"},
                        "task_17": {"todo": "metrics"},
                        "task_18": {"todo": "stop"}}}
 
@@ -1036,8 +1058,6 @@ if cl_args.task_path is not None:  # in vars(args) :
                     cl_args.btd_col = new_dict["flags"]["d"]
                 if "u" in new_dict["flags"]:
                     cl_args.bub_col = new_dict["flags"]["u"]
-                if "c" in new_dict["flags"]:
-                    cl_args.compare = new_dict["flags"]["c"]
             if "parameters" in new_dict:
                 if "min_runs" in new_dict["parameters"]:
                     curr_dict["parameters"]["min_runs"] = new_dict["parameters"]["min_runs"]
@@ -1049,6 +1069,31 @@ if cl_args.task_path is not None:  # in vars(args) :
             print("\n\nWas unable to load task file, will exit", file=sys.stderr)
             sys.exit()
 
+    if "version" in new_dict:
+        try:
+            fmaj, fmin, fpat = new_dict["version"].split('.', maxsplit=2)
+            found_major = int(fmaj)
+            found_minor = int(fmin)
+            found_patch = int(fpat)
+        except Exception:
+            print("\n\nMalformed version in task file, will exit", file=sys.stderr)
+            sys.exit()
+        if (found_major == SEMVER_MAJOR):
+            if (found_minor != SEMVER_MINOR):
+                print("\n\nTaskfile is required to match the minor version of itBins, will exit", file=sys.stderr)
+                sys.exit()
+            if (found_patch < SEMVER_PATCH):
+                print("\n\nWarning: Taskfile version does not match the minor version of itBins", file=sys.stderr)
+        else:
+            print("\n\nTaskfile is required to match the major version of itBins, will exit", file=sys.stderr)
+            sys.exit()
+
+
+    else:
+        print("\n\nNo field \"version\" in task file, will exit", file=sys.stderr)
+        sys.exit()
+
+
 loud = 1
 info = 0
 if cl_args.info:
@@ -1057,7 +1102,7 @@ if cl_args.quiet:
     loud = 0
     info = 0
 
-lprint("\n█\033[7mALGORITHMIC BIN CURATOR\033[0m█\n")
+lprint("\n█\033[7mALGORITHMIC BIN CURATOR - ITBINS\033[0m█\n")
 
 if cl_args.task_path is not None:
     lprint("Working from task file.")
@@ -1270,6 +1315,7 @@ for binIndex, listedBin in enumerate(binList) :
                         np.nan,
                         np.nan,
                         np.nan]
+    mark_of_death = False
     
     
 ################################################################################
@@ -1292,7 +1338,13 @@ for binIndex, listedBin in enumerate(binList) :
             except Exception :
                 print("FAST_entry: Was unable to create the dictionary of np.arrays. Will continue with next bin.", file = sys.stderr)
                 traceback.print_exc()
-                break            
+                break
+            try:
+                orig_array = copy.deepcopy(curr_array)
+            except Exception:
+                print("FAST_entry: Was unable to deepcopy the bin array. Will continue with next bin.", file=sys.stderr)
+                traceback.print_exc()
+                break
             #task_m1_timer += time.time() - t_0
 
 ################################################################################
@@ -1301,12 +1353,12 @@ for binIndex, listedBin in enumerate(binList) :
             
         elif curr_dict["tasks"][key]["todo"] == "check_eukarya" :
             #t_0 = time.time()
-            print("check euk")
+            #print("check euk")
             ### Get parameters from task dictionary
             try :
                 cutoff = curr_dict["tasks"][key]["cutoff"]
             except Exception :
-                print("Comp_cutoff: error while trying to read task parameters. Make sure task is of form:\n"
+                print("Check Eukaryota: error while trying to read task parameters. Make sure task is of form:\n"
                       "\"[key]\" : {\"todo\" : \"comp_cutoff\",\n"
                       "           \"cutoff\" : [0 ... 1],\n"
                       "Will continue with next task.", file = sys.stderr)
@@ -1321,9 +1373,9 @@ for binIndex, listedBin in enumerate(binList) :
             euk_length = np.sum(curr_array["length"][np.where(curr_array["Tax"][0, :] == "Eukaryota")[0]])
             total_length = np.sum(curr_array["length"])
             euk_portion = euk_length / total_length
-            print("euk_length", euk_length)
-            print("total_length", total_length)
-            print("euk_portion", euk_portion)
+            #print("euk_length", euk_length)
+            #print("total_length", total_length)
+            #print("euk_portion", euk_portion)
 
             
             ### Check if the bin might be eukaryotic
@@ -1373,6 +1425,8 @@ for binIndex, listedBin in enumerate(binList) :
             
             ### Give feedback and break if completeness was to low
             higher_completeness = max(bacterial_completeness, archaeal_completeness)
+            if removed:
+                mark_of_death = True
             if removed :
                 iprint("Bin removed due to completeness " + str(higher_completeness*100)[:6] + " < " + str(cutoff*100) + " %. Will continue with next bin.")
                 if cl_args.summary_path != None :
@@ -1381,8 +1435,8 @@ for binIndex, listedBin in enumerate(binList) :
 
                 ### finish working on the bin if cutoff
                 if curr_dict["tasks"][key]["break"] :
-                    if cl_args.summary_path != None :
-                        bin_summary_list_list.append(bin_summary_list)
+                    #if cl_args.summary_path != None :
+                    #    bin_summary_list_list.append(bin_summary_list)
                     break
             else :
                 iprint("Bin completeness equal to or above threshold of " + str(cutoff*100) + " %.")
@@ -1724,13 +1778,13 @@ for binIndex, listedBin in enumerate(binList) :
                 #print(curr_array["filters"])
                 #print(curr_array["GC"][(curr_array["filters"][0] & curr_array["filters"][1] & curr_array["filters"][2]) == 1])
                 #original_array = PROT_entry(curr_frame)
-                original_bacterial_completeness = FAST_completeness(curr_array["bacterial_SCGs"])
-                original_archaeal_completeness = FAST_completeness(curr_array["archaeal_SCGs"])
-                original_bacterial_contamination = FAST_contamination(curr_array["bacterial_SCGs"])
-                original_archaeal_contamination = FAST_contamination(curr_array["archaeal_SCGs"])
-                original_bacterial_score = FAST_dt_score(curr_array["bacterial_SCGs"])
-                original_archaeal_score = FAST_dt_score(curr_array["archaeal_SCGs"])
-                original_binsize = np.shape(curr_array["filters"])[-1]
+                original_bacterial_completeness = FAST_completeness(orig_array["bacterial_SCGs"])
+                original_archaeal_completeness = FAST_completeness(orig_array["archaeal_SCGs"])
+                original_bacterial_contamination = FAST_contamination(orig_array["bacterial_SCGs"])
+                original_archaeal_contamination = FAST_contamination(orig_array["archaeal_SCGs"])
+                original_bacterial_score = FAST_dt_score(orig_array["bacterial_SCGs"])
+                original_archaeal_score = FAST_dt_score(orig_array["archaeal_SCGs"])
+                original_binsize = np.shape(orig_array["filters"])[-1]
                 
                 if cl_args.summary_path != None :
                     bin_summary_list[1:15] = [original_binsize,
@@ -1757,9 +1811,9 @@ for binIndex, listedBin in enumerate(binList) :
             lprint("│Bacterial completeness and contamination: " + str(original_bacterial_completeness) + ", " + str(original_bacterial_contamination))
             lprint("│Archaeal completeness and contamination: " + str(original_archaeal_completeness) + ", " + str(original_archaeal_contamination))
             lprint("│Bacterial and archaeal binscore: " + str(original_bacterial_score) + ", " + str(original_archaeal_score))
-            lprint("│Bacterial completeness and contamination (algorithm): " + str(algo_bacterial_completeness) + ", " + str(algo_bacterial_contamination))
-            lprint("│Archaeal completeness and contamination (algorithm): " + str(algo_archaeal_completeness) + ", " + str(algo_archaeal_contamination))
-            lprint("│Bacterial and archaeal binscore (algorithm): " + str(algo_bacterial_score) + ", " + str(algo_archaeal_score))
+            lprint("│Bacterial completeness and contamination (after curation): " + str(algo_bacterial_completeness) + ", " + str(algo_bacterial_contamination))
+            lprint("│Archaeal completeness and contamination (after curation): " + str(algo_archaeal_completeness) + ", " + str(algo_archaeal_contamination))
+            lprint("│Bacterial and archaeal binscore (after curation): " + str(algo_bacterial_score) + ", " + str(algo_archaeal_score))
             #lprint("│GC limits: " + str(gclower) + " : " + str(gcupper) + " (" + str(gcdiffJ) + ")")
             #lprint("│Cov limits: " + str(covlower) + " : " + str(covupper) + " (" + str(covdiffJ) + ")")
 
@@ -1793,8 +1847,8 @@ for binIndex, listedBin in enumerate(binList) :
             curr_frame.loc[:, "Cov_Filter"] = pd.Series(data = curr_array["filters"][1], dtype = "int", index = curr_frame.index)
             curr_frame.loc[:, "Tax_Filter"] = pd.Series(data = curr_array["filters"][2], dtype = "int", index = curr_frame.index)
             #task_71_timer += time.time() - t_71
-            print("\nCurrarray:\n", curr_array["filters"][0])
-            print("\nCurrframe:\n", curr_frame.loc[:, "GC_Filter"])
+            #print("\nCurrarray:\n", curr_array["filters"][0])
+            #print("\nCurrframe:\n", curr_frame.loc[:, "GC_Filter"])
 
             
 ################################################################################
@@ -1804,6 +1858,16 @@ for binIndex, listedBin in enumerate(binList) :
         elif curr_dict["tasks"][key]["todo"] == "append_remainder" :
             #t_8 = time.time()
             
+            #print("@")
+            if mark_of_death:
+                print("\n\nWhole bin has been dropped, no remainder will be appended\n\n")
+                continue
+
+            curr_frame.loc[:, "GC_Filter"] = pd.Series(data = curr_array["filters"][0], dtype = "int", index = curr_frame.index)
+            curr_frame.loc[:, "Cov_Filter"] = pd.Series(data = curr_array["filters"][1], dtype = "int", index = curr_frame.index)
+            curr_frame.loc[:, "Tax_Filter"] = pd.Series(data = curr_array["filters"][2], dtype = "int", index = curr_frame.index)
+           
+
             curr_size = curr_frame.shape[0]
             remainder_size = curr_frame.loc[~(curr_frame.Tax_Filter & curr_frame.GC_Filter & curr_frame.Cov_Filter).astype("bool"), "babc"].shape[0]
             if curr_size == remainder_size :
@@ -1848,9 +1912,18 @@ for binIndex, listedBin in enumerate(binList) :
                 except Exception :
                     print("\n\nWhile append_remainder task: Was unable to update current frame\n", file = sys.stderr)
                     traceback.print_exc()
+                try :
+                    curr_array = PROT_entry(curr_frame)
+                except Exception :
+                    print("While append_remainder task: Was unable to synchronise the bin frame. Will continue with next bin.", file = sys.stderr)
+                    traceback.print_exc()
+                    break            
             #task_8_timer += time.time() - t_8
             #print("binnames:", curr_frame.babc.drop_duplicates())
+            #print("@@")
+
             
+
             
 ################################################################################
 ### TASK: CONT_CUTOFF
@@ -1875,7 +1948,7 @@ for binIndex, listedBin in enumerate(binList) :
             ### Perform completeness cutoff task
             try :
                 curr_array, removed, relevant_contamination, contamination_type = PROT_contamination_cutoff(curr_array, cutoff)
-                print("\n@@@@@\n", relevant_contamination, removed)
+                #print("\n@@@@@\n", relevant_contamination, removed)
             except Exception :
                 print("Cont_cutoff: Was unable to perform contamination cutoff. Will continue with next task.", file = sys.stderr)
                 traceback.print_exc()
@@ -1884,6 +1957,8 @@ for binIndex, listedBin in enumerate(binList) :
             
             ### Give feedback and break if completeness was to low
             higher_completeness = max(bacterial_completeness, archaeal_completeness)
+            if removed:
+                mark_of_death = True
             if removed :
                 iprint("Bin removed due to contamination " + str(higher_completeness*100)[:6] + " > " + str(cutoff*100) + " %. Will continue with next bin.")
                 #task_9_timer += time.time() - t_9
@@ -1921,14 +1996,53 @@ for binIndex, listedBin in enumerate(binList) :
 ################################################################################
 
     if cl_args.summary_path != None :
+        #print("appending summary segment")
         bin_summary_list_list.append(bin_summary_list)
 
     if cl_args.out_path != None :
         try :
+            # check if curation failed, revert changes if it did
+            cfc_algo_bacterial_score = FAST_dt_score(FAST_filter(curr_array["bacterial_SCGs"], curr_array["filters"]))
+            cfc_algo_archaeal_score = FAST_dt_score(FAST_filter(curr_array["archaeal_SCGs"], curr_array["filters"]))
+            cfc_original_bacterial_score = FAST_dt_score(curr_array["bacterial_SCGs"])
+            cfc_original_archaeal_score = FAST_dt_score(curr_array["archaeal_SCGs"])
+            cfc_original_bacterial_completeness = FAST_completeness(curr_array["bacterial_SCGs"])
+            cfc_original_archaeal_completeness = FAST_completeness(curr_array["archaeal_SCGs"])
+
+            if mark_of_death:
+                new_filters = np.zeros_like(curr_array["filters"])
+                #print("new filter", new_filters)
+                #print("old array filters", curr_array["filters"][1])
+                curr_array["filters"] = new_filters
+                #print("applied array filters", curr_array["filters"][1])
+            else:
+                if (cfc_original_bacterial_completeness > cfc_original_archaeal_completeness):
+                    if (cfc_algo_bacterial_score < cfc_original_bacterial_score):
+                        #print("Curation failed to improve bin, outputting unchanged bin to scaff2bin")
+                        new_filters = np.ones_like(curr_array["filters"])
+                        #print("new filter", new_filters)
+                        #print("old array filters", curr_array["filters"][1])
+                        curr_array["filters"] = new_filters
+                        #print("applied array filters", curr_array["filters"][1])
+                else:
+                    if (cfc_algo_archaeal_score < cfc_original_archaeal_score):
+                        print("Curation failed to improve bin, outputting unchanged bin to scaff2bin")
+                        new_filters = np.ones_like(curr_array["filters"])
+                        curr_array["filters"] = new_filters
+
+
+
+            #print("\ncurr_array\n", curr_array["filters"][0].astype('int'))
+            curr_frame.loc[:, "GC_Filter"] = pd.Series(data = curr_array["filters"][0], dtype = "int", index = curr_frame.index)
+            curr_frame.loc[:, "Cov_Filter"] = pd.Series(data = curr_array["filters"][1], dtype = "int", index = curr_frame.index)
+            curr_frame.loc[:, "Tax_Filter"] = pd.Series(data = curr_array["filters"][2], dtype = "int", index = curr_frame.index)
+
+            #print("\ncurr_frame\n", curr_frame.GC_Filter)
             total.loc[total["babc"] == listedBin, "GC_Filter"] = curr_frame.GC_Filter
             total.loc[total["babc"] == listedBin, "Cov_Filter"] = curr_frame.Cov_Filter
             total.loc[total["babc"] == listedBin, "Tax_Filter"] = curr_frame.Tax_Filter
             total.loc[total["babc"] == listedBin, "babc"] = curr_frame.babc
+            #print("\ntotal frame\n", total.loc[total["babc"] == listedBin, "GC_Filter"]) 
             lprint("│Updating results.")
         except Exception :
             print("While updating results: failed to update total frame.", file = sys.stderr)
@@ -1940,6 +2054,7 @@ for binIndex, listedBin in enumerate(binList) :
     workingStringLength2 = len(workingString2) -2
     lprint(workingString2 + "└" + "─" * workingStringLength2)
     run += 1
+    mark_of_death = False
 
 ################################################################################
 ### POST BINS SECTION / END OF BIN LOOP
@@ -1967,6 +2082,121 @@ else:
 total_out.fillna(value = "none", inplace = True)
 
 ################################################################################
+### BINNING SUCCESS ESTIMATION
+################################################################################
+
+
+#print(total.columns)
+se_table = total[['scaffold', 'coverage', 'B_ribosomal_protein_S3', 'B_gyrA', 'A_Ribosomal_protein_S3Ae', 'babc']]
+#print('se table', se_table.shape[0])
+
+se_table = se_table.loc[se_table.coverage >= 7.0, :]
+
+#print('se table', se_table.shape[0])
+
+se_table.insert(6, 'binned', 0)
+for i in range(se_table.shape[0]):
+    if se_table.iloc[i, 5] != 'None' and se_table.iloc[i, 5] != 'none' and se_table.iloc[i, 5] != '':
+        se_table.iloc[i, 6] = 1
+
+num_total_bgyra = se_table.B_gyrA.sum()
+num_binned_bgyra = se_table.loc[se_table.binned == 1, 'B_gyrA'].sum()
+if (num_total_bgyra == 0):
+    fraction_bgyra = 0.0
+else:
+    fraction_bgyra = num_binned_bgyra / num_total_bgyra
+num_total_brps = se_table.B_ribosomal_protein_S3.sum()
+num_binned_brps = se_table.loc[se_table.binned == 1, 'B_ribosomal_protein_S3'].sum()
+if (num_total_brps == 0):
+    fraction_brps = 0
+else:
+    fraction_brps = num_binned_brps / num_total_brps
+num_total_arps = se_table.A_Ribosomal_protein_S3Ae.sum()
+num_binned_arps = se_table.loc[se_table.binned == 1, 'A_Ribosomal_protein_S3Ae'].sum()
+if (num_total_arps == 0):
+    fraction_arps = 0
+else:
+    fraction_arps = num_binned_arps / num_total_arps
+
+total_coverage = se_table.coverage.sum()
+se_table.sort_values('coverage', ascending = False, inplace=True, ignore_index=True)
+
+curr_cov_sum = 0.0
+curr_cov_ind = 0
+
+while (curr_cov_sum < 0.7 * total_coverage):
+    curr_cov_sum += se_table.iloc[curr_cov_ind, 1]
+    curr_cov_ind += 1
+
+seventypercent_total_bgyra = se_table.iloc[0:curr_cov_ind, 3].sum()
+seventypercent_binned_bgyra = se_table.iloc[0:curr_cov_ind, :].loc[se_table.binned == 1, 'B_gyrA'].sum()
+if (seventypercent_total_bgyra == 0):
+    sp_fraction_bgyra = 0
+else:
+    sp_fraction_bgyra = seventypercent_binned_bgyra / seventypercent_total_bgyra
+seventypercent_total_brps = se_table.iloc[0:curr_cov_ind, 2].sum()
+seventypercent_binned_brps = se_table.iloc[0:curr_cov_ind, :].loc[se_table.binned == 1, 'B_ribosomal_protein_S3'].sum()
+if (seventypercent_total_brps == 0):
+    sp_fraction_brps = 0
+else:
+    sp_fraction_brps = seventypercent_binned_brps / seventypercent_total_brps
+seventypercent_total_arps = se_table.iloc[0:curr_cov_ind, 4].sum()
+seventypercent_binned_arps = se_table.iloc[0:curr_cov_ind, :].loc[se_table.binned == 1, 'A_Ribosomal_protein_S3Ae'].sum()
+if (seventypercent_total_arps == 0):
+    sp_fraction_arps = 0
+else:
+    sp_fraction_arps = seventypercent_binned_arps / seventypercent_total_arps
+
+
+
+#print(se_table)
+print('\n┌\033[4mEstimating binning success\033[0m')
+print('│')
+print('│Binning success overall:')
+print('│')
+print('│    gene marker    binned    fraction    of total')
+print('├─────────────────────────────────────────────────')
+print('│ Bacterial GyrA' + str(num_binned_bgyra).rjust(10, " ") + str(round(fraction_bgyra, 2)).rjust(12, " ") + str(num_total_bgyra).rjust(12, " "))
+print('│ Bacterial RPS3' + str(num_binned_brps).rjust(10, " ") + str(round(fraction_brps, 2)).rjust(12, " ") + str(num_total_brps).rjust(12, " "))
+print('│Archaeal RPS3Ae' + str(num_binned_arps).rjust(10, " ") + str(round(fraction_arps, 2)).rjust(12, " ") + str(num_total_arps).rjust(12, " "))
+print('│')
+print('│')
+print('│Binning success based on top 70% coverage:')
+print('│')
+print('│    gene marker    binned    fraction    of total')
+print('├─────────────────────────────────────────────────')
+print('│ Bacterial GyrA' + str(seventypercent_binned_bgyra).rjust(10, " ") + str(round(sp_fraction_bgyra, 2)).rjust(12, " ") + str(seventypercent_total_bgyra).rjust(12, " "))
+print('│ Bacterial RPS3' + str(seventypercent_binned_brps).rjust(10, " ") + str(round(sp_fraction_brps, 2)).rjust(12, " ") + str(seventypercent_total_brps).rjust(12, " "))
+print('│Archaeal RPS3Ae' + str(seventypercent_binned_arps).rjust(10, " ") + str(round(sp_fraction_arps, 2)).rjust(12, " ") + str(seventypercent_total_arps).rjust(12, " "))
+print('├─────────────────────────────────────────────────')
+print('│"of total" refers to the total number of markers')
+print('│found in the input dataset, filtered to exclude')
+print('│coverage<7 in both cases and filtered to include')
+print('│only those contigs that make up the upper 70% of')
+print('│coverage<7 in the input dataset in the case of')
+print('│"top 70% coverage".')
+print('└──────────────────────────────────────────────────')
+
+bscols = ["gene marker",
+          "binned_70_percent_coverage",
+          "fraction_70_percent_coverage",
+          "total_70_percent_coverage",
+          "binned_100_percent_coverage",
+          "fraction_100_percent_coverage",
+          "total_100_percent_coverage"]
+bsdata = [["Bacterial GyrA", "Bacterial RPS3", "Archaeal RPS3Ae"],
+          [seventypercent_binned_bgyra, seventypercent_binned_brps, seventypercent_binned_arps],
+          [sp_fraction_bgyra, sp_fraction_brps, sp_fraction_arps],
+          [seventypercent_total_bgyra, seventypercent_total_brps, seventypercent_total_arps],
+          [num_binned_bgyra, num_binned_brps, num_binned_arps],
+          [fraction_bgyra, fraction_brps, fraction_arps],
+          [num_total_bgyra, num_total_brps, num_total_arps]]
+bsdata = list(zip(*bsdata))
+bsframe = pd.DataFrame(data = bsdata, columns = bscols)
+#print(bsframe)
+
+
+################################################################################
 ### SAVE OUTPUT OR PRINT TO STDOUT
 ################################################################################
 
@@ -1988,34 +2218,50 @@ if cl_args.no_output : # setting flag sets False
 else :
     lprint("\nResult discarded")
 
+if cl_args.estimate_path != None:
+    bsframe.to_csv(cl_args.estimate_path, sep = "\t", index = False)
+
 if cl_args.summary_path != None :
-    print(bin_summary_list_list)
-    print(np.array(bin_summary_list_list).shape)
+    #print(len(bin_summary_list_list))
+    #summary_maxlen = 1
+    #for sublist in bin_summary_list_list:
+    #    if len(sublist) > summary_maxlen:
+    #        summary_maxlen = len(sublist)
+    #for idx, sublist in enumerate(bin_summary_list_list):
+    #    if len(sublist) < summary_maxlen:
+    #        for diff in range(summary_maxlen - len(sublist)):
+    #            bin_summary_list_list[idx].append(np.nan)
+    #for sublist in bin_summary_list_list:
+    #    print(len(sublist))
+    #    print(sublist)
+    #print(np.array(bin_summary_list_list).shape)
     summary_frame = pd.DataFrame(data = bin_summary_list_list)
     summary_frame = summary_frame.iloc[:, 0:18]
     summary_frame.columns = ["bin",                                       
-                             "#scaffolds(dt)", 
-                             "bac_completeness(dt)", 
-                             "bac_contamination(dt)", 
-                             "bac_score(dt)", 
-                             "arc_completeness(dt)", 
-                             "arc_contamination(dt)", 
-                             "arc_score(dt)",
-                             "#scaffolds(abc)", 
-                             "bac_completeness(abc)", 
-                             "bac_contamination(abc)", 
-                             "bac_score(abc)", 
-                             "arc_completeness(dabct)", 
-                             "arc_contamination(abc)", 
-                             "arc_score(abc)", 
+                             "#scaffolds(uncurated)", 
+                             "bac_completeness(uncurated)", 
+                             "bac_contamination(uncurated)", 
+                             "bac_score(uncurated)", 
+                             "arc_completeness(uncurated)", 
+                             "arc_contamination(uncurated)", 
+                             "arc_score(uncurated)",
+                             "#scaffolds(itBins)", 
+                             "bac_completeness(itBins)", 
+                             "bac_contamination(itBins)", 
+                             "bac_score(itBins)", 
+                             "arc_completeness(itBins)", 
+                             "arc_contamination(itBins)", 
+                             "arc_score(itBins)", 
                              "score_improvement",
                              "comp/cont_flag",
                              "Eukaryote?"]
-    print(summary_frame)
-    summary_frame.loc[(summary_frame.score_improvement <= -0.1), "flag"] = "!RECHECK: drop in dt bin score"
-    summary_frame.loc[(summary_frame.flag == ""), "flag"] = "fine"
+    #print(summary_frame)
+    summary_frame.loc[(summary_frame.score_improvement <= -0.1), "flag"] = "!RECHECK: drop in dt bin score indicates failure to autocurate, manual curation recommended. Bin unchanged in scaff2bin."
+    summary_frame.loc[(summary_frame.score_improvement > -0.1), "flag"] = "curated"
+    summary_frame.loc[(summary_frame['comp/cont_flag'] == 'removed due to high contamination'), "flag"] = "removed"
+    summary_frame.loc[(summary_frame['comp/cont_flag'] == 'removed due to low completeness'), "flag"] = "removed"
     summary_frame.to_csv(cl_args.summary_path, sep = "\t", index = False)
-    
+    #print(summary_frame)
 ################################################################################
 ### END OF PROGRAM
 ################################################################################
