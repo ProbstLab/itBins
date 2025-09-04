@@ -3,33 +3,39 @@ itBins is a superfast cli-tool for the automated curation of metagenome-assemble
 ### Prerequesites:
 
 * [python](https://www.python.org)
-* [pandas](https://pandas.pydata.org)
-* [numpy](https://numpy.org/)
+* [pandas](https://www.pandas.pydata.org)
+* [numpy](https://www.numpy.org/)
 
 ### Install:
 
-Set up an environment with conda or a similar tool
+Itbins is mirrored to [Github](https://www.github.com/ProbstLab/itBins) from it's home on [Codeberg](https://www.codeberg.org/JMK/itBins). Get it from either. Set up an environment with mamba or a similar tool (using conda is no longer recommended).
 
 ```
-conda create -n itBinsEnv python=3.10.11 pandas=1.4.2 numpy=1.21.5
+mamba create -n itBinsEnv python=3.10.11 pandas=1.4.2 numpy=1.21.5
 ```
 
-Activate the environment
+Activate the environment.
 
 ```
-conda activate itBinsEnv
+mamba activate itBinsEnv
 ```
 
-Then run the following command in your project's directory, substituting for wherever you keep itBins
+Confirm that the Versions for python, pandas and numpy are correct.
 
 ```
-python /[pathToItBins]/itBins_0_6_0.py --example-task-file
+mamba list
+```
+
+Then run the following command in your project's directory, substituting for wherever you keep itBins.
+
+```
+python /[pathToItBins]/itBins.py --example-task-file
 ```
 
 This creates a basic config file for running itBins, called tasks.json. If you have the input files ready, you can now run itBins:
 
 ```
-python /[pathToItBins]/itBins_0_6_0.py -s -t tasks.json -b overview.txt -g SCGs.csv -o itBins_output.tsv > itBins.log
+python /[pathToItBins]/itBins.py -s -t tasks.json -b overview.txt -g SCGs.csv -o itBins_output.tsv > itBins.log
 ```
 
 ### Advanced Use:
@@ -39,11 +45,11 @@ coming soon ...
 coming soon ...
 
 ### Configuration:
-coming soon ...
+You can configure itBins by changing the tasks.json file, adjusting the order of tasks and their parameters. It is also possible to remove tasks.
 
 ### Roadmap:
 coming soon ...
 
 ### Citation:
-coming soon ...
+A publication is coming soon, until then please cite the codeberg repository.
 
