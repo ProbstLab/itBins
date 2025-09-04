@@ -140,7 +140,7 @@ ARCHAEAL_REFERENCE_GENE_NUMBER = 38
 
 SEMVER_MAJOR = 0
 SEMVER_MINOR = 8
-SEMVER_PATCH = 0
+SEMVER_PATCH = 1
 VERSION_STRING = str(SEMVER_MAJOR) + '.' + str(SEMVER_MINOR) + '.' + str(SEMVER_PATCH)
 #dt_timer = 0
 #dt_count = 0
@@ -381,6 +381,7 @@ def PROT_create_peaklist(dict_of_arrays, type_of_peaklist):
     create a peaklist
     returns dictionarys of np.arrays
     """
+    #print(dict_of_arrays)
     if type_of_peaklist == "GC":
         a_values = dict_of_arrays["GC"]
     elif type_of_peaklist == "Cov":
@@ -608,6 +609,7 @@ def PROT_tax_drop(dict_of_arrays,
     drop_length = max_length * np.sum(FAST_filter(dict_of_arrays["length"], dict_of_arrays["filters"]))  # check boolification
     chosen_domain = "bacterial_score_improvement" if (bacterial_completeness > archaeal_completeness) else "archaeal_score_improvement"
     highest_score_improvement = np.max(tax_table[chosen_domain])
+    #print(tax_table)
     choose_by_score_improvement = np.where(tax_table[chosen_domain] == highest_score_improvement)
     if highest_score_improvement == 0:
         for item in np.nditer(choose_by_score_improvement):
@@ -621,11 +623,16 @@ def PROT_tax_drop(dict_of_arrays,
         return dict_of_arrays, False
 
     choose_by_length = np.where(tax_table["length"] == np.max(tax_table["length"][choose_by_score_improvement]))[0]
-    if tax_table[chosen_domain][choose_by_length] < 0:
+    #print(np.where(tax_table["length"] == np.max(tax_table["length"][choose_by_score_improvement])))
+    #print(choose_by_score_improvement)
+    #print(tax_table[chosen_domain][choose_by_length])
+    #print(tax_table[chosen_domain][choose_by_length][0])
+
+    if tax_table[chosen_domain][choose_by_length][0] < 0:
         iprint("No tax dropped")
         return dict_of_arrays, False
-    if (tax_table["length"][choose_by_length] <= drop_length) | always_drop_if_score_improves:
-        tax_to_drop = tax_table["tax"][choose_by_length]
+    if (tax_table["length"][choose_by_length][0] <= drop_length) | always_drop_if_score_improves:
+        tax_to_drop = tax_table["tax"][choose_by_length][0]
         iprint("Drop: ", tax_to_drop)
         dict_of_arrays["filters"][2, (dict_of_arrays["Tax"][drop_level] == tax_to_drop)] = False
         return dict_of_arrays, True
@@ -1083,7 +1090,7 @@ if cl_args.task_path is not None:  # in vars(args) :
                 print("\n\nTaskfile is required to match the minor version of itBins, will exit", file=sys.stderr)
                 sys.exit()
             if (found_patch < SEMVER_PATCH):
-                print("\n\nWarning: Taskfile version does not match the minor version of itBins", file=sys.stderr)
+                print("\n\nWarning: Taskfile version does not match the patch version of itBins", file=sys.stderr)
         else:
             print("\n\nTaskfile is required to match the major version of itBins, will exit", file=sys.stderr)
             sys.exit()
@@ -1861,7 +1868,7 @@ for binIndex, listedBin in enumerate(binList) :
             
             #print("@")
             if mark_of_death:
-                print("\n\nWhole bin has been dropped, no remainder will be appended\n\n")
+                iprint("\n\nWhole bin has been dropped, no remainder will be appended\n\n")
                 continue
 
             curr_frame.loc[:, "GC_Filter"] = pd.Series(data = curr_array["filters"][0], dtype = "int", index = curr_frame.index)
@@ -1872,7 +1879,7 @@ for binIndex, listedBin in enumerate(binList) :
             curr_size = curr_frame.shape[0]
             remainder_size = curr_frame.loc[~(curr_frame.Tax_Filter & curr_frame.GC_Filter & curr_frame.Cov_Filter).astype("bool"), "babc"].shape[0]
             if curr_size == remainder_size :
-                print("\n\nWhole bin has been dropped, no remainder will be appended\n\n")
+                iprint("\n\nWhole bin has been dropped, no remainder will be appended\n\n")
                 continue
             
             
