@@ -3,7 +3,7 @@ itBins is a superfast cli-tool for the automated curation of metagenome-assemble
 ### Prerequesites:
 
 * [python](https://www.python.org)
-* [pandas](https://www.pandas.pydata.org)
+* [pandas](https://pandas.pydata.org)
 * [numpy](https://www.numpy.org/)
 
 ### Install:
