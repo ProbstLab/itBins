@@ -140,7 +140,7 @@ ARCHAEAL_REFERENCE_GENE_NUMBER = 38
 
 SEMVER_MAJOR = 0
 SEMVER_MINOR = 8
-SEMVER_PATCH = 1
+SEMVER_PATCH = 2
 VERSION_STRING = str(SEMVER_MAJOR) + '.' + str(SEMVER_MINOR) + '.' + str(SEMVER_PATCH)
 #dt_timer = 0
 #dt_count = 0
@@ -991,7 +991,9 @@ task_dict = {"version": VERSION_STRING,
              "flags": {"d": "Bin",
                        "u": "curated"},
              "parameters": {"min_runs": 0,
-                            "max_runs": 0},
+                            "max_runs": 0,
+                            "archeal_set": "default",
+                            "bacterial_set": "default"},
              "tasks": {"task_00": {"todo": "FAST_entry"},
                        "task_01": {"todo": "check_eukarya",
                                    "cutoff": 0.1},
@@ -1070,6 +1072,19 @@ if cl_args.task_path is not None:  # in vars(args) :
                     curr_dict["parameters"]["min_runs"] = new_dict["parameters"]["min_runs"]
                 if "max_runs" in new_dict["parameters"]:
                     curr_dict["parameters"]["max_runs"] = new_dict["parameters"]["max_runs"]
+                if "archaeal_set" in new_dict["parameters"]:
+                    curr_dict["parameters"]["archaeal_set"] = new_dict["parameters"]["archaeal_set"]
+                    if curr_dict["parameters"]["archaeal_set"] != "default":
+                        ARCHAEAL_REFERENCE_GENES = curr_dict["parameters"]["archaeal_set"]
+                        ARCHAEAL_REFERENCE_GENE_NUMBER = len(curr_dict["parameters"]["archaeal_set"])
+                if "bacterial_set" in new_dict["parameters"]:
+                    curr_dict["parameters"]["bacterial_set"] = new_dict["parameters"]["bacterial_set"]
+                    if curr_dict["parameters"]["bacterial_set"] != "default":
+                        BACTERIAL_REFERENCE_GENES = curr_dict["parameters"]["bacterial_set"]
+                        BACTERIAL_REFERENCE_GENE_NUMBER = len(curr_dict["parameters"]["bacterial_set"])
+
+
+
             if "tasks" in new_dict:
                 curr_dict["tasks"] = new_dict["tasks"]
         except Exception:
@@ -1099,6 +1114,8 @@ if cl_args.task_path is not None:  # in vars(args) :
     else:
         print("\n\nNo field \"version\" in task file, will exit", file=sys.stderr)
         sys.exit()
+
+    if 
 
 
 loud = 1
