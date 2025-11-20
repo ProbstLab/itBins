@@ -140,7 +140,7 @@ ARCHAEAL_REFERENCE_GENE_NUMBER = 38
 
 SEMVER_MAJOR = 0
 SEMVER_MINOR = 8
-SEMVER_PATCH = 2
+SEMVER_PATCH = 3
 VERSION_STRING = str(SEMVER_MAJOR) + '.' + str(SEMVER_MINOR) + '.' + str(SEMVER_PATCH)
 #dt_timer = 0
 #dt_count = 0
@@ -1115,7 +1115,6 @@ if cl_args.task_path is not None:  # in vars(args) :
         print("\n\nNo field \"version\" in task file, will exit", file=sys.stderr)
         sys.exit()
 
-    if 
 
 
 loud = 1
