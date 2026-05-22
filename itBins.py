@@ -140,7 +140,7 @@ ARCHAEAL_REFERENCE_GENE_NUMBER = 38
 
 SEMVER_MAJOR = 0
 SEMVER_MINOR = 8
-SEMVER_PATCH = 4
+SEMVER_PATCH = 5
 VERSION_STRING = str(SEMVER_MAJOR) + '.' + str(SEMVER_MINOR) + '.' + str(SEMVER_PATCH)
 #dt_timer = 0
 #dt_count = 0
@@ -2109,125 +2109,132 @@ total_out.fillna(value = "none", inplace = True)
 ### BINNING SUCCESS ESTIMATION
 ################################################################################
 
+estimating = False
 
-#print(total.columns)
-se_table = total[['scaffold', 'coverage', 'B_ribosomal_protein_S3', 'B_gyrA', 'A_Ribosomal_protein_S3Ae', 'babc']]
-#print('se table', se_table.shape[0])
+if 'B_ribosomal_protein_S3' in BACTERIAL_REFERENCE_GENES \
+    and 'B_gyrA' in BACTERIAL_REFERENCE_GENES \
+    and 'A_Ribosomal_protein_S3Ae' in ARCHAEAL_REFERENCE_GENES:
 
-se_table = se_table.loc[se_table.coverage >= 7.0, :]
+    estimating = True
 
-#print('se table', se_table.shape[0])
-
-se_table.insert(6, 'binned', 0)
-for i in range(se_table.shape[0]):
-    if se_table.iloc[i, 5] != 'None' and se_table.iloc[i, 5] != 'none' and se_table.iloc[i, 5] != '':
-        se_table.iloc[i, 6] = 1
-
-num_total_bgyra = se_table.B_gyrA.sum()
-num_binned_bgyra = se_table.loc[se_table.binned == 1, 'B_gyrA'].sum()
-if (num_total_bgyra == 0):
-    fraction_bgyra = 0.00
-else:
-    fraction_bgyra = num_binned_bgyra / num_total_bgyra * 100
-num_total_brps = se_table.B_ribosomal_protein_S3.sum()
-num_binned_brps = se_table.loc[se_table.binned == 1, 'B_ribosomal_protein_S3'].sum()
-if (num_total_brps == 0):
-    fraction_brps = 0.00
-else:
-    fraction_brps = num_binned_brps / num_total_brps * 100
-num_total_arps = se_table.A_Ribosomal_protein_S3Ae.sum()
-num_binned_arps = se_table.loc[se_table.binned == 1, 'A_Ribosomal_protein_S3Ae'].sum()
-if (num_total_arps == 0):
-    fraction_arps = 0.00
-else:
-    fraction_arps = num_binned_arps / num_total_arps * 100
-
-total_coverage = se_table.coverage.sum()
-se_table.sort_values('coverage', ascending = False, inplace=True, ignore_index=True)
-
-curr_cov_sum = 0.0
-curr_cov_ind = 0
-
-while (curr_cov_sum < 0.7 * total_coverage):
-    curr_cov_sum += se_table.iloc[curr_cov_ind, 1]
-    curr_cov_ind += 1
-
-seventypercent_total_bgyra = se_table.iloc[0:curr_cov_ind, 3].sum()
-seventypercent_binned_bgyra = se_table.iloc[0:curr_cov_ind, :].loc[se_table.binned == 1, 'B_gyrA'].sum()
-if (seventypercent_total_bgyra == 0):
-    sp_fraction_bgyra = 0.00
-else:
-    sp_fraction_bgyra = seventypercent_binned_bgyra / seventypercent_total_bgyra * 100
-seventypercent_total_brps = se_table.iloc[0:curr_cov_ind, 2].sum()
-seventypercent_binned_brps = se_table.iloc[0:curr_cov_ind, :].loc[se_table.binned == 1, 'B_ribosomal_protein_S3'].sum()
-if (seventypercent_total_brps == 0):
-    sp_fraction_brps = 0.00
-else:
-    sp_fraction_brps = seventypercent_binned_brps / seventypercent_total_brps * 100
-seventypercent_total_arps = se_table.iloc[0:curr_cov_ind, 4].sum()
-seventypercent_binned_arps = se_table.iloc[0:curr_cov_ind, :].loc[se_table.binned == 1, 'A_Ribosomal_protein_S3Ae'].sum()
-if (seventypercent_total_arps == 0):
-    sp_fraction_arps = 0.00
-else:
-    sp_fraction_arps = seventypercent_binned_arps / seventypercent_total_arps * 100
-
-
-
-#print(se_table)
-print('\n┌\033[4mEstimating binning success\033[0m')
-print('│')
-print('│Binning success overall:')
-print('│')
-print('│    gene marker    binned    of total    percentage')
-print('├─────────────────────────────────────────────────────────')
-print('│ Bacterial GyrA' + str(num_binned_bgyra).rjust(10, " ") + str(num_total_bgyra).rjust(12, " ") + str(round(fraction_bgyra, 2)).ljust(4, "0").rjust(14, " "))
-print('│ Bacterial RpS3' + str(num_binned_brps).rjust(10, " ") + str(num_total_brps).rjust(12, " ") + str(round(fraction_brps, 2)).ljust(4, "0").rjust(14, " "))
-print('│Archaeal RpS3Ae' + str(num_binned_arps).rjust(10, " ") + str(num_total_arps).rjust(12, " ") + str(round(fraction_arps, 2)).ljust(4, "0").rjust(14, " "))
-print('│')
-print('│')
-print('│Binning success based on top 70% coverage:')
-print('│')
-print('│    gene marker    binned    of total    percentage')
-print('├─────────────────────────────────────────────────────────')
-print('│ Bacterial GyrA' + str(seventypercent_binned_bgyra).rjust(10, " ") + str(seventypercent_total_bgyra).rjust(12, " ") + str(round(sp_fraction_bgyra, 2)).ljust(4, "0").rjust(14, " "))
-print('│ Bacterial RpS3' + str(seventypercent_binned_brps).rjust(10, " ") + str(seventypercent_total_brps).rjust(12, " ") + str(round(sp_fraction_brps, 2)).ljust(4, "0").rjust(14, " "))
-print('│Archaeal RpS3Ae' + str(seventypercent_binned_arps).rjust(10, " ") + str(seventypercent_total_arps).rjust(12, " ") + str(round(sp_fraction_arps, 2)).ljust(4, "0").rjust(14, " "))
-print('├─────────────────────────────────────────────────────────')
-print('│The number of binned and total markers is determined as')
-print('│follows:')
-print('│')
-print('│  1) exclude contigs with coverage < 7')
-print('│  2) sum up coverage for all remaining contigs')
-print('│  3) count the number of binned and total markers')
-print('│  4) sort remaining contigs in descending coverage order')
-print('│  5) add up contig coverage until reaching 70% coverage,')
-print('│     starting with the highest coverage contig')
-print('│  6) exclude the remaining contigs')
-print('│  7) count the number of binned and total markers again')
-print('│')
-print('│WARNING: Accurate binning success estimation requires')
-print('│passing the whole assembly to itbins, not just the binned')
-print('│contigs.')
-print('│')
-print('└──────────────────────────────────────────────────────────')
-
-bscols = ["gene marker",
-          "binned_70_percent_coverage",
-          "fraction_70_percent_coverage",
-          "total_70_percent_coverage",
-          "binned_100_percent_coverage",
-          "fraction_100_percent_coverage",
-          "total_100_percent_coverage"]
-bsdata = [["Bacterial GyrA", "Bacterial RpS3", "Archaeal RpS3Ae"],
-          [seventypercent_binned_bgyra, seventypercent_binned_brps, seventypercent_binned_arps],
-          [sp_fraction_bgyra, sp_fraction_brps, sp_fraction_arps],
-          [seventypercent_total_bgyra, seventypercent_total_brps, seventypercent_total_arps],
-          [num_binned_bgyra, num_binned_brps, num_binned_arps],
-          [fraction_bgyra, fraction_brps, fraction_arps],
-          [num_total_bgyra, num_total_brps, num_total_arps]]
-bsdata = list(zip(*bsdata))
-bsframe = pd.DataFrame(data = bsdata, columns = bscols)
-#print(bsframe)
+    #print(total.columns)
+    se_table = total[['scaffold', 'coverage', 'B_ribosomal_protein_S3', 'B_gyrA', 'A_Ribosomal_protein_S3Ae', 'babc']]
+    #print('se table', se_table.shape[0])
+    
+    se_table = se_table.loc[se_table.coverage >= 7.0, :]
+    
+    #print('se table', se_table.shape[0])
+    
+    se_table.insert(6, 'binned', 0)
+    for i in range(se_table.shape[0]):
+        if se_table.iloc[i, 5] != 'None' and se_table.iloc[i, 5] != 'none' and se_table.iloc[i, 5] != '':
+            se_table.iloc[i, 6] = 1
+    
+    num_total_bgyra = se_table.B_gyrA.sum()
+    num_binned_bgyra = se_table.loc[se_table.binned == 1, 'B_gyrA'].sum()
+    if (num_total_bgyra == 0):
+        fraction_bgyra = 0.00
+    else:
+        fraction_bgyra = num_binned_bgyra / num_total_bgyra * 100
+    num_total_brps = se_table.B_ribosomal_protein_S3.sum()
+    num_binned_brps = se_table.loc[se_table.binned == 1, 'B_ribosomal_protein_S3'].sum()
+    if (num_total_brps == 0):
+        fraction_brps = 0.00
+    else:
+        fraction_brps = num_binned_brps / num_total_brps * 100
+    num_total_arps = se_table.A_Ribosomal_protein_S3Ae.sum()
+    num_binned_arps = se_table.loc[se_table.binned == 1, 'A_Ribosomal_protein_S3Ae'].sum()
+    if (num_total_arps == 0):
+        fraction_arps = 0.00
+    else:
+        fraction_arps = num_binned_arps / num_total_arps * 100
+    
+    total_coverage = se_table.coverage.sum()
+    se_table.sort_values('coverage', ascending = False, inplace=True, ignore_index=True)
+    
+    curr_cov_sum = 0.0
+    curr_cov_ind = 0
+    
+    while (curr_cov_sum < 0.7 * total_coverage):
+        curr_cov_sum += se_table.iloc[curr_cov_ind, 1]
+        curr_cov_ind += 1
+    
+    seventypercent_total_bgyra = se_table.iloc[0:curr_cov_ind, 3].sum()
+    seventypercent_binned_bgyra = se_table.iloc[0:curr_cov_ind, :].loc[se_table.binned == 1, 'B_gyrA'].sum()
+    if (seventypercent_total_bgyra == 0):
+        sp_fraction_bgyra = 0.00
+    else:
+        sp_fraction_bgyra = seventypercent_binned_bgyra / seventypercent_total_bgyra * 100
+    seventypercent_total_brps = se_table.iloc[0:curr_cov_ind, 2].sum()
+    seventypercent_binned_brps = se_table.iloc[0:curr_cov_ind, :].loc[se_table.binned == 1, 'B_ribosomal_protein_S3'].sum()
+    if (seventypercent_total_brps == 0):
+        sp_fraction_brps = 0.00
+    else:
+        sp_fraction_brps = seventypercent_binned_brps / seventypercent_total_brps * 100
+    seventypercent_total_arps = se_table.iloc[0:curr_cov_ind, 4].sum()
+    seventypercent_binned_arps = se_table.iloc[0:curr_cov_ind, :].loc[se_table.binned == 1, 'A_Ribosomal_protein_S3Ae'].sum()
+    if (seventypercent_total_arps == 0):
+        sp_fraction_arps = 0.00
+    else:
+        sp_fraction_arps = seventypercent_binned_arps / seventypercent_total_arps * 100
+    
+    
+    
+    #print(se_table)
+    print('\n┌\033[4mEstimating binning success\033[0m')
+    print('│')
+    print('│Binning success overall:')
+    print('│')
+    print('│    gene marker    binned    of total    percentage')
+    print('├─────────────────────────────────────────────────────────')
+    print('│ Bacterial GyrA' + str(num_binned_bgyra).rjust(10, " ") + str(num_total_bgyra).rjust(12, " ") + str(round(fraction_bgyra, 2)).ljust(4, "0").rjust(14, " "))
+    print('│ Bacterial RpS3' + str(num_binned_brps).rjust(10, " ") + str(num_total_brps).rjust(12, " ") + str(round(fraction_brps, 2)).ljust(4, "0").rjust(14, " "))
+    print('│Archaeal RpS3Ae' + str(num_binned_arps).rjust(10, " ") + str(num_total_arps).rjust(12, " ") + str(round(fraction_arps, 2)).ljust(4, "0").rjust(14, " "))
+    print('│')
+    print('│')
+    print('│Binning success based on top 70% coverage:')
+    print('│')
+    print('│    gene marker    binned    of total    percentage')
+    print('├─────────────────────────────────────────────────────────')
+    print('│ Bacterial GyrA' + str(seventypercent_binned_bgyra).rjust(10, " ") + str(seventypercent_total_bgyra).rjust(12, " ") + str(round(sp_fraction_bgyra, 2)).ljust(4, "0").rjust(14, " "))
+    print('│ Bacterial RpS3' + str(seventypercent_binned_brps).rjust(10, " ") + str(seventypercent_total_brps).rjust(12, " ") + str(round(sp_fraction_brps, 2)).ljust(4, "0").rjust(14, " "))
+    print('│Archaeal RpS3Ae' + str(seventypercent_binned_arps).rjust(10, " ") + str(seventypercent_total_arps).rjust(12, " ") + str(round(sp_fraction_arps, 2)).ljust(4, "0").rjust(14, " "))
+    print('├─────────────────────────────────────────────────────────')
+    print('│The number of binned and total markers is determined as')
+    print('│follows:')
+    print('│')
+    print('│  1) exclude contigs with coverage < 7')
+    print('│  2) sum up coverage for all remaining contigs')
+    print('│  3) count the number of binned and total markers')
+    print('│  4) sort remaining contigs in descending coverage order')
+    print('│  5) add up contig coverage until reaching 70% coverage,')
+    print('│     starting with the highest coverage contig')
+    print('│  6) exclude the remaining contigs')
+    print('│  7) count the number of binned and total markers again')
+    print('│')
+    print('│WARNING: Accurate binning success estimation requires')
+    print('│passing the whole assembly to itbins, not just the binned')
+    print('│contigs.')
+    print('│')
+    print('└──────────────────────────────────────────────────────────')
+    
+    bscols = ["gene marker",
+              "binned_70_percent_coverage",
+              "fraction_70_percent_coverage",
+              "total_70_percent_coverage",
+              "binned_100_percent_coverage",
+              "fraction_100_percent_coverage",
+              "total_100_percent_coverage"]
+    bsdata = [["Bacterial GyrA", "Bacterial RpS3", "Archaeal RpS3Ae"],
+              [seventypercent_binned_bgyra, seventypercent_binned_brps, seventypercent_binned_arps],
+              [sp_fraction_bgyra, sp_fraction_brps, sp_fraction_arps],
+              [seventypercent_total_bgyra, seventypercent_total_brps, seventypercent_total_arps],
+              [num_binned_bgyra, num_binned_brps, num_binned_arps],
+              [fraction_bgyra, fraction_brps, fraction_arps],
+              [num_total_bgyra, num_total_brps, num_total_arps]]
+    bsdata = list(zip(*bsdata))
+    bsframe = pd.DataFrame(data = bsdata, columns = bscols)
+    #print(bsframe)
 
 
 ################################################################################
@@ -2252,7 +2259,7 @@ if cl_args.no_output : # setting flag sets False
 else :
     lprint("\nResult discarded")
 
-if cl_args.estimate_path != None:
+if cl_args.estimate_path != None and estimating:
     bsframe.to_csv(cl_args.estimate_path, sep = "\t", index = False)
 
 if cl_args.summary_path != None :
