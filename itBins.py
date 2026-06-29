@@ -778,27 +778,27 @@ parser.add_argument("-u", "--bin-uBin",
                     metavar="UBIN_BIN_NAME_COLUMN",
                     type=str)
 parser.add_argument("--scaff_prefix",
-                    default="",
+                    #default="",
                     dest="scaff_prefix",
                     help="provide a prefix to attach to the names of\n"
                          "scaffolds. this is usefull, if multiple files are\n"
                          "processed and names are not unique between them.\n"
                          "Usually, this should be the name of the sample or\n"
                          "project, followed by \"_\"\n\n",
-                    metavar="PREFIX",
+                    metavar="SCAFF_PREFIX",
                     type=str)
 parser.add_argument("--bin_prefix",
-                    default="",
+                    #default="",
                     dest="bin_prefix",
                     help="provide a prefix to attach to the names of\n"
                          "bins. this is usefull, if multiple files are\n"
                          "processed and names are not unique between them.\n"
                          "Usually, this should be the name of the sample or\n"
                          "project, followed by \"_\"\n\n",
-                    metavar="PREFIX",
+                    metavar="BIN_PREFIX",
                     type=str)
 parser.add_argument("-p", "--prefix",
-                    default="",
+                    #default="",
                     dest="name_prefix",
                     help="provide a prefix to attach to the names of bins and\n"
                          "scaffolds. this is usefull, if multiple files are\n"
