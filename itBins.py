@@ -139,8 +139,8 @@ ARCHAEAL_REFERENCE_GENES = ["A_CCA-adding_enzyme",
 ARCHAEAL_REFERENCE_GENE_NUMBER = 38
 
 SEMVER_MAJOR = 0
-SEMVER_MINOR = 8
-SEMVER_PATCH = 5
+SEMVER_MINOR = 9
+SEMVER_PATCH = 0
 VERSION_STRING = str(SEMVER_MAJOR) + '.' + str(SEMVER_MINOR) + '.' + str(SEMVER_PATCH)
 #dt_timer = 0
 #dt_count = 0
@@ -777,6 +777,26 @@ parser.add_argument("-u", "--bin-uBin",
                          "to \"curated\"\n\n",
                     metavar="UBIN_BIN_NAME_COLUMN",
                     type=str)
+parser.add_argument("--scaff_prefix",
+                    default="",
+                    dest="scaff_prefix",
+                    help="provide a prefix to attach to the names of\n"
+                         "scaffolds. this is usefull, if multiple files are\n"
+                         "processed and names are not unique between them.\n"
+                         "Usually, this should be the name of the sample or\n"
+                         "project, followed by \"_\"\n\n",
+                    metavar="PREFIX",
+                    type=str)
+parser.add_argument("--bin_prefix",
+                    default="",
+                    dest="bin_prefix",
+                    help="provide a prefix to attach to the names of\n"
+                         "bins. this is usefull, if multiple files are\n"
+                         "processed and names are not unique between them.\n"
+                         "Usually, this should be the name of the sample or\n"
+                         "project, followed by \"_\"\n\n",
+                    metavar="PREFIX",
+                    type=str)
 parser.add_argument("-p", "--prefix",
                     default="",
                     dest="name_prefix",
@@ -1208,14 +1228,20 @@ except Exception :
     sys.exit()
 
 if cl_args.name_prefix != None :
+    cl_args.scaff_prefix = cl_args.name_prefix
+    cl_args.bin_prefix = cl_args.name_prefix
+
+if cl_args.scaff_prefix != None :
     try :
-        total.loc[:, "scaffold"] = cl_args.name_prefix + total.loc[:, "scaffold"]
+        total.loc[:, "scaffold"] = cl_args.scaff_prefix + total.loc[:, "scaffold"]
         lprint("Added prefix to scaffold names.")
     except Exception :
         print("\n\nWas unable to add prefix to scaffold names.", file = sys.stderr)
         traceback.print_exc()
+
+if cl_args.bin_prefix != None :
     try :
-        total.loc[:, cl_args.bdt_col] = cl_args.name_prefix + total.loc[:, cl_args.bdt_col]
+        total.loc[:, cl_args.bdt_col] = cl_args.bin_prefix + total.loc[:, cl_args.bdt_col]
         lprint("Added prefix to DASTool bin names.")
     except Exception :
         print("\n\nWas unable to add prefix to DASTool bin names.", file = sys.stderr)
