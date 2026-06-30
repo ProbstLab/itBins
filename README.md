@@ -66,8 +66,25 @@ This creates a basic config file for running itBins, called tasks.json. If you h
 python /[pathToItBins]/itBins.py -s -t tasks.json -b overview.txt -g SCGs.csv -o itBins_output.tsv > itBins.log
 ```
 
+### Input File Format:
+scg file
+overview file
+
+
 ### Advanced Use:
-coming soon ...
+#### Modifying the task file
+The flags section allows setting two of the flags that define column names. It is followed by the parameters section, which lists minruns and maxruns, both of which should be set to 0, and the gene sset parameters, which may be set to default or a comma separated list of gene names, the list must be enclosed in square brackets. Any set of genes may be used, but the names must match the column headers in the SCGs.csv file.
+The taskfile lists all tasks to perform in the tasks section, with all their parameters in clear text format. NAME may be any name but must be unique in the task file.
+
+```
+"NAME": {"todo": "task_identifier",
+         "parameter_1": value,
+         "parameter_2": value,
+         ...
+        },
+```
+
+The tasks are performed in the order listed in the task file, by changing the order in the task file the order of operations can be modified. The stop task may be inserted to stop refinement with it without having to delete further tasks.
 
 ### Input Prep:
 itBins uses the same input uBin uses. You can check out the [uBin-helperscripts](https://github.com/ProbstLab/uBin-helperscripts) for that. A python based version of these scripts will be made available in the near future. The preprint (see below) also includes details on the format of the input files.
