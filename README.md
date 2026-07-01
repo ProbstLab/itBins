@@ -74,6 +74,12 @@ overview file
 ### Advanced Use:
 #### Modifying the task file
 The flags section allows setting two of the flags that define column names. It is followed by the parameters section, which lists minruns and maxruns, both of which should be set to 0, and the gene sset parameters, which may be set to default or a comma separated list of gene names, the list must be enclosed in square brackets. Any set of genes may be used, but the names must match the column headers in the SCGs.csv file.
+
+```
+"archeal_set": "default",
+"bacterial_set": ["b_gene_01", "b_gene_02", "b_gene_03", ...],
+```
+
 The taskfile lists all tasks to perform in the tasks section, with all their parameters in clear text format. NAME may be any name but must be unique in the task file.
 
 ```
@@ -89,8 +95,28 @@ The tasks are performed in the order listed in the task file, by changing the or
 ### Input Prep:
 itBins uses the same input uBin uses. You can check out the [uBin-helperscripts](https://github.com/ProbstLab/uBin-helperscripts) for that. A python based version of these scripts will be made available in the near future. The preprint (see below) also includes details on the format of the input files.
 
+To generate the input files, the following data needs to be collected: Length & GC-content for each contig, both of which can be trivially extracted from the fasta files. The reads also need to be mapped against the contigs to obtain coverage data, we recommend BOWTIE2, but other mappers may also be used. Contig-to-bin assignments will be available from binning or bin aggregation, e.g., using DASTool. Taxonomic information is obtained by blasting aganinst a custom database (see the uBin-helperscripts for details). The data can then be put together as follows, in tab-separated format:
+
+
+| scaffold | length | gc   | coverage | taxonomy               | bin             |
+----------------------------------------------------------------------------------
+| scaff\_01 | 12345  | 50.2 | 22.2    | bacteria;unclassified; | example\_bin\_1 |
+
+
+In addition, single-copy-gene information will also be needed, it is similarily available by blasting aganst the SCGs sequences. The SCG data can be collected as follows, in comma separated format. Contigs without SCGs should still have an entry, just with just zeros. The gene names must match the custom set, if one is employed.
+
+
+| scaffolds | b\_gene\_01 | b\_gene\_02 | b\_gene\_03 | b\_gene\_04 | b\_gene\_05 | ... |
+-----------------------------------------------------------------------------------------
+| scaff\_01 |           1 |           2 |           0 |           1 |           1 | ... |
+
+
+
 ### Configuration:
 You can configure itBins by changing the tasks.json file, adjusting the order of tasks and their parameters. It is also possible to remove tasks, or force an early stop wit an inserted stop task while tinkering with your custom taskfile. Custom single-copy-gene sets can be configured in the taskfile aswell.
+
+
+
 
 ### Roadmap:
 coming soon ...
