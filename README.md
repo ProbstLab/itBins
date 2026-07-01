@@ -98,16 +98,16 @@ itBins uses the same input uBin uses. You can check out the [uBin-helperscripts]
 To generate the input files, the following data needs to be collected: Length & GC-content for each contig, both of which can be trivially extracted from the fasta files. The reads also need to be mapped against the contigs to obtain coverage data, we recommend BOWTIE2, but other mappers may also be used. Contig-to-bin assignments will be available from binning or bin aggregation, e.g., using DASTool. Taxonomic information is obtained by blasting aganinst a custom database (see the uBin-helperscripts for details). The data can then be put together as follows, in tab-separated format:
 
 
-| scaffold | length | gc   | coverage | taxonomy               | bin             |
-----------------------------------------------------------------------------------
-| scaff\_01 | 12345  | 50.2 | 22.2    | bacteria;unclassified; | example\_bin\_1 |
+| scaffold  | length | gc   | coverage | taxonomy               | bin             |
+|-----------|--------|------|----------|------------------------|-----------------|
+| scaff\_01 | 12345  | 50.2 | 22.2     | bacteria;unclassified; | example\_bin\_1 |
 
 
 In addition, single-copy-gene information will also be needed, it is similarily available by blasting aganst the SCGs sequences. The SCG data can be collected as follows, in comma separated format. Contigs without SCGs should still have an entry, just with just zeros. The gene names must match the custom set, if one is employed.
 
 
 | scaffolds | b\_gene\_01 | b\_gene\_02 | b\_gene\_03 | b\_gene\_04 | b\_gene\_05 | ... |
------------------------------------------------------------------------------------------
+|-----------|-------------|-------------|-------------|-------------|-------------|-----|
 | scaff\_01 |           1 |           2 |           0 |           1 |           1 | ... |
 
 
