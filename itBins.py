@@ -885,6 +885,8 @@ parser.add_argument("--manual",
                     version=("╔══════════════════════════════════════════════════════════════════════════════╗\n"
                              "║      ITBINS - MANUAL                                                         ║\n"
                              "╚══════════════════════════════════════════════════════════════════════════════╝\n\n"
+                            
+                             "█\033[7mTHE MANUAL MAY BE OUTDATED, PLEASE REFER TO THE PREPRINT AT https://doi.org/10.64898/2026.03.30.715291\033[0m█\n\n"
 
                              "█\033[7mHOW THE PRORAM WORKS:\033[0m█\n\n"
 
@@ -986,6 +988,10 @@ parser.add_argument("--manual",
                              "stop\n"
                              "This task breaks out of the task loop and continues with post task work on the\n"
                              "bin. Does not neccessarily jump to the next bin immediately.\n\n"
+
+                             "█\033[7mTHE MANUAL MAY BE OUTDATED, PLEASE REFER TO THE PREPRINT AT https://doi.org/10.64898/2026.03.30.715291\033[0m█\n\n"
+
+
                              ""),
                     help="\ndisplay manual")
 #t_list_of_old_times = []

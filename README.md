@@ -25,7 +25,7 @@ usage: itBins [-b BIN_OVERVIEW_FILE] [-g SINGLE_COPY_GENE_FILE] [-d DASTOOL_BIN_
 -o --output [OUTPUT_FILE]					provide file-path to save the modified table of scaffolds to
 --estimate [ESTIMATE_PATH]					provide a path to save the binning success esitimation to
 -s --summary [SUMMARY_FILE]					provide a file-path to save a summary file to. Default: "itBins_summary.tsv"
--t --task-file [TASK_FILE]					provide path to a task file (.json). Default: "./tasks.json" exists. Overwrites internal defaults
+-t --task-file [TASK_FILE]					provide path to a task file (.json). Default: "./tasks.json".
 --example-task-file [TASK_FILE]				provide path to create an example task file at, defaults to "./tasks.json"
 -i --info --verbose							will print detailed info
 -q --quiet									will not print progress messages
