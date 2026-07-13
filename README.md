@@ -17,16 +17,16 @@ usage: itBins [-b BIN_OVERVIEW_FILE] [-g SINGLE_COPY_GENE_FILE] [-d DASTOOL_BIN_
               
 -b --bins BIN_OVERVIEW_FILE					provide path to an overview file
 -g --genes SINGLE_COPY_GENE_FILE			provide path to a singe copy gene file
--d --bin-DASTool DASTOOL_BIN_NAME_COLUMN	provide the name of the column in the overview file containing the binnames of the uncurated bins
--u --bin-uBin UBIN_BIN_NAME_COLUMN			provide the name of the column in the overview file containing the binnames of the curated bins
+-d --bin-DASTool DASTOOL_BIN_NAME_COLUMN	provide the column name for the uncurated bins
+-u --bin-uBin UBIN_BIN_NAME_COLUMN			provide the column name for the curated bins
 --scaff_prefix SCAFF_PREFIX					provide a prefix to attach to the names of scaffolds
 --bin_prefix BIN_PREFIX						provide a prefix to attach to the names of bins
 -p --prefix PREFIX							provide a prefix to attach to the names of bins and scaffolds
 -o --output [OUTPUT_FILE]					provide file-path to save the modified table of scaffolds to
 --estimate [ESTIMATE_PATH]					provide a path to save the binning success esitimation to
--s --summary [SUMMARY_FILE]					provide a file-path to save a summary file to. If the path is omitted, it is saved as "itBins_summary.tsv"
--t --task-file [TASK_FILE]					provide path to a task file (.json). The path may be omitted if "./tasks.json" exists. The taskfile overwrites internal defaults
---example-task-file [TASK_FILE]				provide path to create an example task file at, if a path is omitted it defaults to "./tasks.json"
+-s --summary [SUMMARY_FILE]					provide a file-path to save a summary file to. Default: "itBins_summary.tsv"
+-t --task-file [TASK_FILE]					provide path to a task file (.json). Default: "./tasks.json" exists. Overwrites internal defaults
+--example-task-file [TASK_FILE]				provide path to create an example task file at, defaults to "./tasks.json"
 -i --info --verbose							will print detailed info
 -q --quiet									will not print progress messages
 --log-to-stderr								redirect all printing to stderr
