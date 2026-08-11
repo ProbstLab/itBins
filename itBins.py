@@ -2212,7 +2212,7 @@ if 'B_ribosomal_protein_S3' in BACTERIAL_REFERENCE_GENES \
     new1binnedcontigs = se_table.loc[se_table.binned == 1, :].shape[0]
     new1fraction = 100 * new1binnedcontigs / max(1, new1totalcontigs)
     new1totallen = se_table.iloc[:, 0].sum()
-    new1binnedlen = se_table.iloc[se_table.binned == 1, 0].sum()
+    new1binnedlen = se_table.loc[se_table.binned == 1, 'length'].sum()
     new1lenfraction = 100 * new1binnedlen / max(1, new1totallen)
 
     # NEW2
@@ -2268,9 +2268,8 @@ if 'B_ribosomal_protein_S3' in BACTERIAL_REFERENCE_GENES \
     print('│ Overall success:')
     print('│')
     print('│        bps binned          of total        percentage')
-    print('│' + str(new1binnedlen).rjust(18, " ") + str(new1totallen).rjust(18, " ") + str(round(new1lenfraction, 2)).rjust(18, " "))
-    print('│ considering average coverage:')
-    print('│' + str(round(new2fraction, 2)).rjust(54, " "))
+    print('│' + str(int(new1binnedlen)).rjust(18, " ") + str(int(new1totallen)).rjust(18, " ") + str(round(new1lenfraction, 2)).rjust(18, " "))
+    print('│               considering average coverage:' + str(round(new2fraction, 2)).rjust(10, " "))
     print('│')
     print('├─────────────────────────────────────────────────────────')
     print('│')
@@ -2278,22 +2277,25 @@ if 'B_ribosomal_protein_S3' in BACTERIAL_REFERENCE_GENES \
     print('│')
     print('│markergenes binned          of total        percentage')
     print('│' + str(new3binnedbrps3).rjust(18, " ") + str(new3totalbrps3).rjust(18, " ") + str(round(new3fractionbrps3, 2)).rjust(18, " "))
-    print('│ considering average coverage:')
-    print('│' + str(round(new4fractionbrps3 , 2)).rjust(54, " "))
+    print('│               considering average coverage:' + str(round(new4fractionbrps3, 2)).rjust(10, " "))
+    #print('│ considering average coverage:')
+    #print('│' + str(round(new4fractionbrps3 , 2)).rjust(54, " "))
     print('│')
     print('│ Community, based on bacterial gyrA:')
     print('│')
     print('│markergenes binned          of total        percentage')
     print('│' + str(new3binnedbgyra).rjust(18, " ") + str(new3totalbgyra).rjust(18, " ") + str(round(new3fractionbgyra, 2)).rjust(18, " "))
-    print('│ considering average coverage:')
-    print('│' + str(round(new4fractionbgyra , 2)).rjust(54, " "))
+    print('│               considering average coverage:' + str(round(new4fractionbgyra, 2)).rjust(10, " "))
+    #print('│ considering average coverage:')
+    #print('│' + str(round(new4fractionbgyra , 2)).rjust(54, " "))
     print('│')
     print('│ Community, based on archaeal rpS3Ae:')
     print('│')
     print('│markergenes binned          of total        percentage')
     print('│' + str(new3binnedarps3ae).rjust(18, " ") + str(new3totalarps3ae).rjust(18, " ") + str(round(new3fractionarps3ae, 2)).rjust(18, " "))
-    print('│ considering average coverage:')
-    print('│' + str(round(new4fractionarps3ae , 2)).rjust(54, " "))
+    print('│               considering average coverage:' + str(round(new4fractionarps3ae, 2)).rjust(10, " "))
+    #print('│ considering average coverage:')
+    #print('│' + str(round(new4fractionarps3ae , 2)).rjust(54, " "))
     print('│')
     print('└─────────────────────────────────────────────────────────')
 
@@ -2304,7 +2306,7 @@ if 'B_ribosomal_protein_S3' in BACTERIAL_REFERENCE_GENES \
                  "coverage fraction" : [new2fraction/100, new4fractionbrps3/100, new4fractionbgyra/100, new4fractionarps3ae/100]
                  }
     se_result_frame = pd.DataFrame.from_dict(se_result)
-    se_result_frame.to_csv(cl_args.estimate_path, sep='\t')
+    #se_result_frame.to_csv(cl_args.estimate_path, sep='\t')
 
 
 
@@ -2511,7 +2513,7 @@ else :
     lprint("\nResult discarded")
 
 if cl_args.estimate_path != None and estimating:
-    bsframe.to_csv(cl_args.estimate_path, sep = "\t", index = False)
+    se_result_frame.to_csv(cl_args.estimate_path, sep = "\t", index = False)
 
 if cl_args.summary_path != None :
     #print(len(bin_summary_list_list))
