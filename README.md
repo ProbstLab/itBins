@@ -141,8 +141,7 @@ itbins -t taskfile.json -b overview.tsv -g SCGs.csv -o itbins_output.tsv -s itbi
 ```
 
 ### Binning success estimation
-itBins estimates the success of binning based on coverage and marker genes. As a requirement, all contigs must be passed to itBins in the input files, not just binned contigs. For an overall estimation of binning success, itBins compares the number of binned contigs to the total number of contigs, *e.g.*, 345932/634933
-and it’s fraction 0.54. At the same time, itBins also provides a value taking into account the average coverage and length of each contig resulting in a fraction, *e.g.*, 0.32.
+itBins estimates the success of binning based on coverage and marker genes. As a requirement, all contigs in the assembly must be passed to itBins in the input files, not just binned contigs. For an overall estimation of binning success, itBins compares the number of binned basepairs (aggregate length of binned contigs) to the total number of basepairs in the assembly, *e.g.*, 345932/634933 and it’s fraction 0.54. At the same time, itBins also provides a value taking into account the average coverage of the contigs resulting in a fraction, *e.g.*, 0.32.
 
 For estimating the binned community members, itBins uses three marker-genes, bacterial *rpS3*, bacterial *gyrA* and archaeal *rpS3Ae*. Custom marker gene sets must include these three genes for the estimation to take place. *rpS3* and *rpS3Ae* represent bacteria and archaea repectively, *gyrA* is meant to be a canary value. If the results for *gyrA* strongly deviate from *rpS3*, the dataset may be skewed and the estimation inaccurate.
 
@@ -150,8 +149,8 @@ To calculate the binning success of the community, itBins firstly determines the
 
 In total itBins calculates:
 
-* The numbers of binned versus unbinned contigs and their fraction
-* The fraction of binned contigs taking into account coverage and length
+* The numbers of binned versus unbinned basepairs and their fraction
+* The fraction of binned basepairs taking into account their average coverage
 * The numbers of binned versus unbinned contigs with marker genes and their fraction
 * The fraction of binned contigs with marker genes taking into account their average coverage
 

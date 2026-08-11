@@ -139,7 +139,7 @@ ARCHAEAL_REFERENCE_GENES = ["A_CCA-adding_enzyme",
 ARCHAEAL_REFERENCE_GENE_NUMBER = 38
 
 SEMVER_MAJOR = 0
-SEMVER_MINOR = 10
+SEMVER_MINOR = 11
 SEMVER_PATCH = 0
 VERSION_STRING = str(SEMVER_MAJOR) + '.' + str(SEMVER_MINOR) + '.' + str(SEMVER_PATCH)
 #dt_timer = 0
@@ -1089,15 +1089,23 @@ curr_dict = copy.deepcopy(task_dict)
 if cl_args.task_path is not None:  # in vars(args) :
     #print("#####\n\n\n\n\n#####\n\n\n\n\n#####")
     #print(ARCHAEAL_REFERENCE_GENES, flush=True)
-    with open(cl_args.task_path) as file:
-        new_dict = json.load(file)
-        curr_dict = copy.deepcopy(new_dict)
-        if new_dict["parameters"]["archaeal_set"] != "default":
-                ARCHAEAL_REFERENCE_GENES = new_dict["parameters"]["archaeal_set"]
-                ARCHAEAL_REFERENCE_GENE_NUMBER = len(new_dict["parameters"]["archaeal_set"])
-        if new_dict["parameters"]["bacterial_set"] != "default":
-                BACTERIAL_REFERENCE_GENES = new_dict["parameters"]["bacterial_set"]
-                BACTERIAL_REFERENCE_GENE_NUMBER = len(new_dict["parameters"]["bacterial_set"])
+    try:
+        with open(cl_args.task_path) as file:
+            new_dict = json.load(file)
+            curr_dict = copy.deepcopy(new_dict)
+            if new_dict["parameters"]["archaeal_set"] != "default":
+                    ARCHAEAL_REFERENCE_GENES = new_dict["parameters"]["archaeal_set"]
+                    ARCHAEAL_REFERENCE_GENE_NUMBER = len(new_dict["parameters"]["archaeal_set"])
+            if new_dict["parameters"]["bacterial_set"] != "default":
+                    BACTERIAL_REFERENCE_GENES = new_dict["parameters"]["bacterial_set"]
+                    BACTERIAL_REFERENCE_GENE_NUMBER = len(new_dict["parameters"]["bacterial_set"])
+            cl_args.btd_col = new_dict["flags"]["d"]
+            cl_args.bub_col = new_dict["flags"]["u"]
+
+    except Exception:
+        print("\n\nWas unable to load task file, will exit", file=sys.stderr)
+        sys.exit()
+
         #print(curr_dict, flush=True)
 
         #try:
@@ -2203,6 +2211,9 @@ if 'B_ribosomal_protein_S3' in BACTERIAL_REFERENCE_GENES \
     new1totalcontigs = se_table.shape[0]
     new1binnedcontigs = se_table.loc[se_table.binned == 1, :].shape[0]
     new1fraction = 100 * new1binnedcontigs / max(1, new1totalcontigs)
+    new1totallen = se_table.iloc[:, 0].sum()
+    new1binnedlen = se_table.iloc[se_table.binned == 1, 0].sum()
+    new1lenfraction = 100 * new1binnedlen / max(1, new1totallen)
 
     # NEW2
     new2totalcovlen = 0
@@ -2256,9 +2267,9 @@ if 'B_ribosomal_protein_S3' in BACTERIAL_REFERENCE_GENES \
     print('│')
     print('│ Overall success:')
     print('│')
-    print('│    contigs binned          of total        percentage')
-    print('│' + str(new1binnedcontigs).rjust(18, " ") + str(new1totalcontigs).rjust(18, " ") + str(round(new1fraction, 2)).rjust(18, " "))
-    print('│ considering coverage and length:')
+    print('│        bps binned          of total        percentage')
+    print('│' + str(new1binnedlen).rjust(18, " ") + str(new1totallen).rjust(18, " ") + str(round(new1lenfraction, 2)).rjust(18, " "))
+    print('│ considering average coverage:')
     print('│' + str(round(new2fraction, 2)).rjust(54, " "))
     print('│')
     print('├─────────────────────────────────────────────────────────')
