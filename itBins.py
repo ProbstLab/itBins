@@ -1020,7 +1020,7 @@ task_dict = {"version": VERSION_STRING,
              "parameters": {"min_runs": 0,
                             "max_runs": 0,
                             "BSE_minimum_coverage": 7,
-                            "archeal_set": "default",
+                            "archaeal_set": "default",
                             "bacterial_set": "default"},
              "tasks": {"task_00": {"todo": "FAST_entry"},
                        "task_01": {"todo": "check_eukarya",
@@ -1087,38 +1087,51 @@ if cl_args.task_example_path is not None:
 
 curr_dict = copy.deepcopy(task_dict)
 if cl_args.task_path is not None:  # in vars(args) :
+    #print("#####\n\n\n\n\n#####\n\n\n\n\n#####")
+    #print(ARCHAEAL_REFERENCE_GENES, flush=True)
     with open(cl_args.task_path) as file:
-        try:
-            new_dict = json.load(file)
-            if "flags" in new_dict:
-                if "d" in new_dict["flags"]:
-                    cl_args.btd_col = new_dict["flags"]["d"]
-                if "u" in new_dict["flags"]:
-                    cl_args.bub_col = new_dict["flags"]["u"]
-            if "parameters" in new_dict:
-                if "min_runs" in new_dict["parameters"]:
-                    curr_dict["parameters"]["min_runs"] = new_dict["parameters"]["min_runs"]
-                if "max_runs" in new_dict["parameters"]:
-                    curr_dict["parameters"]["max_runs"] = new_dict["parameters"]["max_runs"]
-                if "archaeal_set" in new_dict["parameters"]:
-                    curr_dict["parameters"]["archaeal_set"] = new_dict["parameters"]["archaeal_set"]
-                    if curr_dict["parameters"]["archaeal_set"] != "default":
-                        ARCHAEAL_REFERENCE_GENES = curr_dict["parameters"]["archaeal_set"]
-                        ARCHAEAL_REFERENCE_GENE_NUMBER = len(curr_dict["parameters"]["archaeal_set"])
-                if "bacterial_set" in new_dict["parameters"]:
-                    curr_dict["parameters"]["bacterial_set"] = new_dict["parameters"]["bacterial_set"]
-                    if curr_dict["parameters"]["bacterial_set"] != "default":
-                        BACTERIAL_REFERENCE_GENES = curr_dict["parameters"]["bacterial_set"]
-                        BACTERIAL_REFERENCE_GENE_NUMBER = len(curr_dict["parameters"]["bacterial_set"])
+        new_dict = json.load(file)
+        curr_dict = copy.deepcopy(new_dict)
+        if new_dict["parameters"]["archaeal_set"] != "default":
+                ARCHAEAL_REFERENCE_GENES = new_dict["parameters"]["archaeal_set"]
+                ARCHAEAL_REFERENCE_GENE_NUMBER = len(new_dict["parameters"]["archaeal_set"])
+        if new_dict["parameters"]["bacterial_set"] != "default":
+                BACTERIAL_REFERENCE_GENES = new_dict["parameters"]["bacterial_set"]
+                BACTERIAL_REFERENCE_GENE_NUMBER = len(new_dict["parameters"]["bacterial_set"])
+        #print(curr_dict, flush=True)
+
+        #try:
+        #    new_dict = json.load(file)
+        #    if "flags" in new_dict:
+        #        if "d" in new_dict["flags"]:
+        #            cl_args.btd_col = new_dict["flags"]["d"]
+        #        if "u" in new_dict["flags"]:
+        #            cl_args.bub_col = new_dict["flags"]["u"]
+        #    curr_dict = copy.deepcopy(new_dict)
+            #if "parameters" in new_dict:
+            #    if "min_runs" in new_dict["parameters"]:
+            #        curr_dict["parameters"]["min_runs"] = new_dict["parameters"]["min_runs"]
+            #    if "max_runs" in new_dict["parameters"]:
+            #        curr_dict["parameters"]["max_runs"] = new_dict["parameters"]["max_runs"]
+                #if "archaeal_set" in new_dict["parameters"]:
+                #    curr_dict["parameters"]["archaeal_set"] = new_dict["parameters"]["archaeal_set"]
+        #    if new_dict["parameters"]["archaeal_set"] != "default":
+        #        ARCHAEAL_REFERENCE_GENES = new_dict["parameters"]["archaeal_set"]
+        #        ARCHAEAL_REFERENCE_GENE_NUMBER = len(new_dict["parameters"]["archaeal_set"])
+                #if "bacterial_set" in new_dict["parameters"]:
+                #    curr_dict["parameters"]["bacterial_set"] = new_dict["parameters"]["bacterial_set"]
+        #    if new_dict["parameters"]["bacterial_set"] != "default":
+        #        BACTERIAL_REFERENCE_GENES = new_dict["parameters"]["bacterial_set"]
+        #        BACTERIAL_REFERENCE_GENE_NUMBER = len(new_dict["parameters"]["bacterial_set"])
 
 
 
-            if "tasks" in new_dict:
-                curr_dict["tasks"] = new_dict["tasks"]
-        except Exception:
-            print("\n\nWas unable to load task file, will exit", file=sys.stderr)
-            sys.exit()
-
+        #    if "tasks" in new_dict:
+        #        curr_dict["tasks"] = new_dict["tasks"]
+        #except Exception:
+        #    print("\n\nWas unable to load task file, will exit", file=sys.stderr)
+        #    sys.exit()
+    #print(ARCHAEAL_REFERENCE_GENES, flush=True)
     if "version" in new_dict:
         try:
             fmaj, fmin, fpat = new_dict["version"].split('.', maxsplit=2)
@@ -2178,7 +2191,7 @@ if 'B_ribosomal_protein_S3' in BACTERIAL_REFERENCE_GENES \
     # feststellen ob scaff gebinnt ist
     se_table.insert(6, 'binned', 0)
     for i in range(se_table.shape[0]):
-        if se_table.iloc[i, 5] != 'None' and se_table.iloc[i, 5] != 'none' and se_table.iloc[i, 5] != '':
+        if (se_table.iloc[i, 5] != 'None') and ((se_table.iloc[i, 5] != 'none') and (se_table.iloc[i, 5] != '')):
             se_table.iloc[i, 6] = 1
     
     # tabelle sieht so aus:
@@ -2187,15 +2200,15 @@ if 'B_ribosomal_protein_S3' in BACTERIAL_REFERENCE_GENES \
 
 
     # NEW1
-    new1totalcontigs = se_table.len()
-    new1binnedcontigs = se_table.loc[se_table.binned == 1, :].len()
+    new1totalcontigs = se_table.shape[0]
+    new1binnedcontigs = se_table.loc[se_table.binned == 1, :].shape[0]
     new1fraction = 100 * new1binnedcontigs / max(1, new1totalcontigs)
 
     # NEW2
     new2totalcovlen = 0
     new2binnedcovlen = 0
     for i in range(se_table.shape[0]):
-        covlen = se_table.iloc[i, 1] * se_table[i, 0]
+        covlen = se_table.iloc[i, 1] * se_table.iloc[i, 0]
         new2totalcovlen += covlen
         if se_table.iloc[i, 6] == 1:
             new2binnedcovlen += covlen
@@ -2224,9 +2237,9 @@ if 'B_ribosomal_protein_S3' in BACTERIAL_REFERENCE_GENES \
     new4binnedcovarps3ae = 0
 
     for i in range(se_table.shape[0]):
-        covbrps3 = se_table.iloc[i, 1] * se_table[i, 2]
-        covbgyra = se_table.iloc[i, 1] * se_table[i, 3]
-        covarps3ae = se_table.iloc[i, 1] * se_table[i, 4]
+        covbrps3 = se_table.iloc[i, 1] * se_table.iloc[i, 2]
+        covbgyra = se_table.iloc[i, 1] * se_table.iloc[i, 3]
+        covarps3ae = se_table.iloc[i, 1] * se_table.iloc[i, 4]
         new4totalcovbrps3 += covbrps3
         new4totalcovbgyra += covbgyra
         new4totalcovarps3ae += covarps3ae
