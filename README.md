@@ -15,7 +15,7 @@ Julian M. Künkel, Till L. V. Bornemann, Wei Xiu, Joern Starke, Tom L. Stach, An
 ## Usage
 
 ```
-usage: itBins [-b BIN_OVERVIEW_FILE] [-g SINGLE_COPY_GENE_FILE] [-d DASTOOL_BIN_NAME_COLUMN] [-u UBIN_BIN_NAME_COLUMN] [-p PREFIX] [-o [OUTPUT_FILE]] [--estimate [ESTIMATE_PATH]] [-s [SUMMARY_FILE]] [-t [TASK_FILE]]
+usage: itbins [-b BIN_OVERVIEW_FILE] [-g SINGLE_COPY_GENE_FILE] [-d DASTOOL_BIN_NAME_COLUMN] [-u UBIN_BIN_NAME_COLUMN] [-p PREFIX] [-o [OUTPUT_FILE]] [--estimate [ESTIMATE_PATH]] [-s [SUMMARY_FILE]] [-t [TASK_FILE]]
               [--example-task-file [TASK_FILE]] [-i] [-q] [--log-to-stderr] [--no-output] [-h] [--version] [--manual]
               
 -b --bins BIN_OVERVIEW_FILE					provide path to an overview file
@@ -54,7 +54,7 @@ The data must then be put together as follows, in tab-separated format (*e.g.*, 
 
 
 
-| scaffold  | length | gc   | coverage | taxonomy               | bin             |
+| scaffold  | length | GC   | coverage | taxonomy               | Bin             |
 |-----------|--------|------|----------|------------------------|-----------------|
 | scaff\_01 | 12345  | 50.2 | 22.2     | bacteria;unclassified; | example\_bin\_1 |
 
